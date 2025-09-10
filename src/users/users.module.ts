@@ -13,6 +13,6 @@ import { UsersRepository } from './users.repository';
     UsersQueryService,
     PrismaService,
   ],
-  exports: [],
+  exports: [UsersCommandService, UsersQueryService, UsersRepository],
 })
 export class UsersModule {}

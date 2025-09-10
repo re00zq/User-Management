@@ -36,6 +36,12 @@ export class UsersRepository {
     return this.prisma.user.findFirst({ where });
   }
 
+  async findFirst(where: {
+    where: Prisma.UserWhereInput;
+  }): Promise<User | null> {
+    return this.prisma.user.findFirst(where);
+  }
+
   async findMany(params: {
     skip?: number;
     take?: number;
