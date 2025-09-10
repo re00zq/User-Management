@@ -9,19 +9,26 @@ import { UsersRepository } from '../users.repository';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { UpdateUserStatusDto } from '../dto/update-user-status.dto';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class UsersCommandService {
-  constructor(private readonly repository: UsersRepository) {}
+  constructor(
+    private readonly repository: UsersRepository,
+    private readonly i18n: I18nService,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<Omit<User, 'password'>> {
     const { username, email, password } = createUserDto;
 
-    const existingUser =
-      (await this.repository.findOneByEmailOrUsername(email)) ||
-      (await this.repository.findOneByEmailOrUsername(username));
-    if (existingUser) {
-      throw new ConflictException('Username or email already in use.');
+    const existingEmail = await this.repository.findOneByEmailOrUsername(email);
+    if (existingEmail) {
+      throw new ConflictException(this.i18n.t('user.CONFLICT_EMAIL'));
+    }
+    const existingUsername =
+      await this.repository.findOneByEmailOrUsername(username);
+    if (existingUsername) {
+      throw new ConflictException(this.i18n.t('user.CONFLICT_USERNAME'));
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -42,7 +49,9 @@ export class UsersCommandService {
   ): Promise<Omit<User, 'password'>> {
     const userExists = await this.repository.findOneById(id);
     if (!userExists) {
-      throw new NotFoundException(`User with ID "${id}" not found.`);
+      throw new NotFoundException(
+        this.i18n.t('user.NOT_FOUND', { args: { id } }),
+      );
     }
 
     const { username, email } = updateUserDto;
@@ -68,7 +77,9 @@ export class UsersCommandService {
   ): Promise<Omit<User, 'password'>> {
     const userExists = await this.repository.findOneById(id);
     if (!userExists) {
-      throw new NotFoundException(`User with ID "${id}" not found.`);
+      throw new NotFoundException(
+        this.i18n.t('user.NOT_FOUND', { args: { id } }),
+      );
     }
 
     const updatedUser = await this.repository.update(id, {
@@ -81,7 +92,9 @@ export class UsersCommandService {
   async remove(id: string): Promise<void> {
     const userExists = await this.repository.findOneById(id);
     if (!userExists) {
-      throw new NotFoundException(`User with ID "${id}" not found.`);
+      throw new NotFoundException(
+        this.i18n.t('user.NOT_FOUND', { args: { id } }),
+      );
     }
     await this.repository.delete(id);
   }

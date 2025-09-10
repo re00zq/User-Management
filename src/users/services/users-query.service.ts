@@ -2,15 +2,21 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
 import { QueryUserDto } from '../dto/query-user.dto';
 import { UsersRepository } from '../users.repository';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class UsersQueryService {
-  constructor(private readonly repository: UsersRepository) {}
+  constructor(
+    private readonly repository: UsersRepository,
+    private readonly i18n: I18nService,
+  ) {}
 
   async findOneById(id: string): Promise<Omit<User, 'password'>> {
     const user = await this.repository.findOneById(id);
     if (!user) {
-      throw new NotFoundException(`User with ID "${id}" not found.`);
+      throw new NotFoundException(
+        this.i18n.t('user.NOT_FOUND', { args: { id } }),
+      );
     }
     const { password, ...result } = user;
     return result;

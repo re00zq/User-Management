@@ -12,6 +12,7 @@ import { RegisterUserDto } from './dto/register.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
 import { User } from '@prisma/client';
 import { UsersRepository } from '../users/users.repository';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +23,7 @@ export class AuthService {
     private readonly usersQueryService: UsersQueryService,
     private readonly usersRepository: UsersRepository,
     private readonly jwtService: JwtService,
+    private readonly i18n: I18nService,
   ) {}
 
   /**
@@ -77,8 +79,7 @@ export class AuthService {
         `Password reset attempt for non-existent email: ${email}`,
       );
       return {
-        message:
-          'If a user with this email exists, a reset token has been generated.',
+        message: this.i18n.t('auth.PASSWORD_RESET_INITIATED'),
       };
     }
 
@@ -100,8 +101,7 @@ export class AuthService {
     );
 
     return {
-      message:
-        'If a user with this email exists, a reset token has been generated.',
+      message: this.i18n.t('auth.PASSWORD_RESET_INITIATED'),
     };
   }
 
@@ -122,7 +122,9 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnprocessableEntityException('Invalid or expired reset token.');
+      throw new UnprocessableEntityException(
+        this.i18n.t('auth.INVALID_RESET_TOKEN'),
+      );
     }
 
     const hashedPassword = await bcrypt.hash(newPass, 10);
@@ -133,6 +135,6 @@ export class AuthService {
       resetTokenExpiry: null,
     });
 
-    return { message: 'Password has been reset successfully.' };
+    return { message: this.i18n.t('auth.PASSWORD_RESET_SUCCESS') };
   }
 }

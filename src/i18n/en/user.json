@@ -1,0 +1,5 @@
+{
+  "CONFLICT_EMAIL": "This email address is already in use.",
+  "CONFLICT_USERNAME": "This username is already taken.",
+  "NOT_FOUND": "User with ID {{id}} was not found."
+}
